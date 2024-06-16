@@ -2,8 +2,10 @@
 
 
   <el-container>
-    <el-aside width="200px">
-      <SidebarMenu/>
+    <el-aside width="1" class="bg-[#545c64] h-[100vh]">
+      <el-scrollbar>
+        <SidebarMenu/>
+      </el-scrollbar>
 
 
     </el-aside>

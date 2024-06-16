@@ -5,7 +5,6 @@ import {InfoFilled, Tools} from "@element-plus/icons-vue";
 
 import {ElMessage, ElNotification, UploadFile, UploadInstance, UploadRequestOptions} from 'element-plus'
 
-import {defineEmits} from 'vue';
 
 // 定义可以发射的事件
 const emit = defineEmits(['onAddPlugin']);
@@ -131,59 +130,63 @@ const clearAll = () => {
   <el-dialog
       v-model="dialogVisible"
       title="上传插件"
-      width="40%"
+      width="50%"
+      align-center
   >
 
+    <div class="flex-center">
+      <el-upload
+          ref="uploadDll"
+          drag
+          :auto-upload="false"
+          action="#"
+          :on-change="beforeChangeDll"
+          :on-remove="onRemoveDll"
+          @click="onOpenDllSelector"
 
-    <el-upload
-        ref="uploadDll"
-        drag
-        :auto-upload="false"
-        action="#"
-        :on-change="beforeChangeDll"
-        :on-remove="onRemoveDll"
-        @click="onOpenDllSelector"
+          :http-request="myUpload"
+      >
+        <el-icon class="el-icon--upload">
+          <Tools/>
+        </el-icon>
 
-        :http-request="myUpload"
-    >
-      <el-icon class="el-icon--upload">
-        <Tools/>
-      </el-icon>
-
-      <div class="el-upload__text">
-        <div v-if="hasDllFile">插件 Dll 文件准备添加</div>
-        <div v-else>
-          拖拽或 <em>点击此处</em> 上传 DLL 文件
+        <div class="el-upload__text">
+          <div v-if="hasDllFile">插件 Dll 文件准备添加</div>
+          <div v-else>
+            拖拽或 <em>点击此处</em> 上传 DLL 文件
+          </div>
         </div>
-      </div>
-    </el-upload>
+      </el-upload>
 
-    <el-upload
-        ref="uploadJson"
-        drag
-        :auto-upload="false"
-        action="#"
-        :on-change="beforeChangeJson"
-        :on-remove="onRemoveJson"
-        @click="onOpenJsonSelector"
+      <el-upload
+          ref="uploadJson"
+          drag
+          :auto-upload="false"
+          action="#"
+          :on-change="beforeChangeJson"
+          :on-remove="onRemoveJson"
+          @click="onOpenJsonSelector"
 
-        :http-request="myUpload"
+          :http-request="myUpload"
 
-    >
-      <el-icon class="el-icon--upload">
-        <InfoFilled/>
-      </el-icon>
-      <div class="el-upload__text">
-        <div v-if="hasJsonFile">
-          插件 Json文件 准备添加
+      >
+        <el-icon class="el-icon--upload">
+          <InfoFilled/>
+        </el-icon>
+        <div class="el-upload__text">
+          <div v-if="hasJsonFile">
+            插件 Json文件 准备添加
+          </div>
+          <div v-else>
+            拖拽或 <em>点击此处</em> 上传 JSON 文件
+          </div>
         </div>
-        <div v-else>
-          拖拽或 <em>点击此处</em> 上传 JSON 文件
-        </div>
-      </div>
-    </el-upload>
+      </el-upload>
+    </div>
 
-    <span slot="footer" class="dialog-footer">
+
+
+    <span slot="footer" class="float-right">
         <el-button @click="onCancel">取消</el-button>
         <el-button type="primary" @click="uploadFiles">确认上传</el-button>
       </span>

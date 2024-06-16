@@ -1,9 +1,15 @@
-import {createRouter, createWebHashHistory} from "vue-router";
+import {createRouter, createWebHashHistory, RouteRecordRaw} from "vue-router";
 import {useUserStore} from "@/store/userStore.ts";
+import {
+    Document,
+    Menu as IconMenu,
+    Location,
+    Setting,
+} from '@element-plus/icons-vue'
 
 export const Layout = () => import('@/layout/BasicLayout.vue');
 
-const routes = [
+export const routes: Readonly<RouteRecordRaw[]> = [
     {
         path: '/login',
         component: () => import('@/pages/Login.vue'),
@@ -15,14 +21,16 @@ const routes = [
         redirect: '/home',
         children: [
             {
-                path: 'home',
+                path: '/home',
                 component: () => import('@/pages/Home.vue'),
                 name: "主页",
+                meta: {title: "主页", icon: IconMenu}
             },
             {
-                path: 'plugin-list',
+                path: '/plugin-list',
                 component: () => import('@/pages/PluginList.vue'),
                 name: "插件列表",
+                meta: {title: "插件列表", icon: Setting}
             }
         ],
         meta: {isAuth: true, title: "管理页面"}
@@ -59,4 +67,5 @@ router.beforeEach((to, _, next) => {
         next()
     }
 })
+
 export default router;
