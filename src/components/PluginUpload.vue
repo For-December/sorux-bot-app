@@ -3,7 +3,7 @@
 import {ref} from 'vue'
 import {InfoFilled, Tools} from "@element-plus/icons-vue";
 
-import {ElMessage, ElNotification, UploadFile, UploadInstance, UploadRequestOptions} from 'element-plus'
+import {ElNotification, UploadFile, UploadInstance, UploadRequestOptions} from 'element-plus'
 
 import {invoke} from '@tauri-apps/api'
 import {UploadRawFile} from "element-plus/es/components/upload/src/upload";
@@ -11,38 +11,84 @@ import {UploadRawFile} from "element-plus/es/components/upload/src/upload";
 // 定义可以发射的事件
 const emit = defineEmits(['onAddPlugin']);
 
-function readFile(
-    file: UploadRawFile,
-    callback: (arrayBuffer: ArrayBuffer) => void
-) {
-  const reader = new FileReader();
-  reader.onload = function (event) {
-    const arrayBuffer = event.target!.result as ArrayBuffer;
-    // arrayBuffer 包含了文件的字节流数据
-    callback(arrayBuffer)
-  };
-  reader.onerror = function (error) {
-    console.error('读取文件时发生错误:', error);
-  };
-  reader.readAsArrayBuffer(file);
-}
 
-const myUpload = (options: UploadRequestOptions) => {
-  console.log("上传文件")
+const filesToUpload = new Map<string, UploadRawFile>()
 
-  console.log(options.file.name)
-  readFile(options.file, (arrayBuffer) => {
-    // console.log(arrayBuffer)
-    const data = new Uint8Array(arrayBuffer);
-
-    console.log()
-    invoke('upload_file', {
-      file: Array.from(data),
-      filename: options.file.name
-    })
-  })
+const myUpload = (_: UploadRequestOptions) => {
+  console.log("自定义上传方法")
+  // console.log("临时存储文件")
+  // if (options.file.name.endsWith(".json")) {
+  //   filesToUpload.set("json", options.file)
+  //
+  // } else if (options.file.name.endsWith(".dll")) {
+  //   filesToUpload.set("dll", options.file)
+  // } else {
+  //
+  //   console.error("未知类型！")
+  // }
 
   return
+
+
+}
+
+
+const beforeUpload = (rawFile: UploadRawFile) => {
+  if (rawFile.name.endsWith(".json")) {
+    filesToUpload.set("json", rawFile)
+
+  } else if (rawFile.name.endsWith(".dll")) {
+    filesToUpload.set("dll", rawFile)
+  } else {
+    console.error("未知类型！")
+  }
+}
+
+const uploadPlugins = async (
+    jsonFile: UploadRawFile,
+    dllFile: UploadRawFile,
+) => {
+  console.log(jsonFile.name)
+  if (!jsonFile || !dllFile) {
+    ElNotification({
+      title: "Error",
+      type: "error",
+      message: "文件为空？",
+    })
+    return
+  }
+
+  try {
+    const jsonData = new Uint8Array(await jsonFile.arrayBuffer());
+    const dllData = new Uint8Array(await dllFile.arrayBuffer());
+
+
+    invoke('upload_plugin', {
+      jsonFile: Array.from(jsonData),
+      dllFile: Array.from(dllData),
+      jsonFilename: jsonFile.name
+    }).then((res) => {
+
+      const msg = res as string;
+      ElNotification({
+        title: "Success",
+        type: "success",
+        message: msg,
+      })
+
+    }).catch((error) => {
+      ElNotification({
+        title: "Error",
+        type: "error",
+        message: error,
+      })
+    })
+
+
+  } catch (error) {
+    console.error('Error reading file:', error);
+  }
+
 }
 
 
@@ -125,6 +171,18 @@ const uploadFiles = () => {
 
   uploadDll.value!.submit(); // 触发 DLL 文件上传
   uploadJson.value!.submit(); // 触发 JSON 文件上传
+
+  // 这里才真正上传插件
+  // filesToUpload.value.forEach(uploadPlugins)
+  console.log(filesToUpload)
+  console.log(filesToUpload.get("json"))
+
+  uploadPlugins(filesToUpload.get("json")!,
+      filesToUpload.get("dll")!)
+      .then(() => {
+        filesToUpload.clear()
+      })
+
   dialogVisible.value = false; // 关闭对话框
 
   // 上传完毕清理文件
@@ -139,6 +197,7 @@ const onCancel = () => {
 }
 
 const clearAll = () => {
+
   uploadDll.value!.clearFiles();
   uploadJson.value!.clearFiles();
 
@@ -161,7 +220,7 @@ const clearAll = () => {
       title="上传插件"
       align-center
   >
-<!--    width="60%"-->
+    <!--    width="60%"-->
     <div class="flex-center">
       <el-upload
           ref="uploadDll"
@@ -169,6 +228,7 @@ const clearAll = () => {
           :auto-upload="false"
           action="#"
           :on-change="beforeChangeDll"
+          :before-upload="beforeUpload"
           :on-remove="onRemoveDll"
           @click="onOpenDllSelector"
 
@@ -192,6 +252,7 @@ const clearAll = () => {
           :auto-upload="false"
           action="#"
           :on-change="beforeChangeJson"
+          :before-upload="beforeUpload"
           :on-remove="onRemoveJson"
           @click="onOpenJsonSelector"
 

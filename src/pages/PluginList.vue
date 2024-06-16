@@ -71,15 +71,9 @@ const fetchData = () => {
 }
 
 const onAddPlugin = () => {
-  setTimeout(()=>{
+  setTimeout(() => {
     fetchData()
-
-    ElNotification({
-      title: "Success",
-      type: "success",
-      message: "插件添加成功！"
-    })
-  },1000)
+  }, 1000)
 
 
 }

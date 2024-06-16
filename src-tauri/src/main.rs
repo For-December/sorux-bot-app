@@ -6,7 +6,7 @@
 use std::fs;
 
 use serde::{Deserialize, Serialize};
-use serde_json::{to_string, Number};
+use serde_json::Number;
 use walkdir::WalkDir;
 
 #[tauri::command]
@@ -14,8 +14,7 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-#[tauri::command]
-fn upload_file(file: Vec<u8>, filename: String) -> Result<String, String> {
+fn upload_file(file: Vec<u8>, filename: &str) -> Result<String, String> {
     use std::fs::File;
     use std::io::Write;
 
@@ -27,7 +26,19 @@ fn upload_file(file: Vec<u8>, filename: String) -> Result<String, String> {
     let mut output = File::create(path).map_err(|e| e.to_string())?;
     output.write_all(&file).map_err(|e| e.to_string())?;
 
-    Ok("文件上传成功".to_string())
+    Ok("插件添加成功！".to_string())
+}
+
+#[tauri::command]
+fn upload_plugin(
+    json_file: Vec<u8>,
+    dll_file: Vec<u8>,
+    json_filename: String,
+) -> Result<String, String> {
+    // 同名上传
+    upload_file(json_file, &json_filename).and_then(|_| {
+        return upload_file(dll_file, &json_filename.replace(".json", ".dll"));
+    })
 }
 
 #[derive(Serialize, Deserialize)]
@@ -89,7 +100,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             greet,
-            upload_file,
+            upload_plugin,
             get_plugins,
             del_plugins
         ])
