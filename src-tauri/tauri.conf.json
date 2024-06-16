@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "sorux-gpt-front",
+    "productName": "sorux-bot-app",
     "version": "0.0.0"
   },
   "tauri": {
@@ -19,7 +19,7 @@
     },
     "windows": [
       {
-        "title": "sorux-gpt-front",
+        "title": "sorux-bot-app",
         "width": 800,
         "height": 600
       }
