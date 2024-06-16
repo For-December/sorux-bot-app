@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import {onMounted, ref} from 'vue'
 import {useUserStore} from "@/store/userStore.ts";
 import {useRouter} from "vue-router";
+import {invoke} from "@tauri-apps/api";
+import {ElNotification} from "element-plus";
 
 const userStore = useUserStore();
 
@@ -13,20 +15,26 @@ const onLogin = () => {
 }
 
 
-const srcUrl =
-    'src/asserts/qr.png'
+
 
 const imageSrc = ref('');
-setTimeout(() => {
-  imageSrc.value = srcUrl
-}, 3000)
-const fetchQRCode = async () => {
-  try {
 
-  } catch (error) {
-    console.error('Failed to fetch QR Code:', error)
-  }
+const fetchQRCode = async () => {
+  invoke("get_qrcode", {}).then((base64) => {
+    imageSrc.value = 'data:image/png;base64,'+base64
+    // console.log(base64)
+  }).catch((err) => {
+    ElNotification({
+      title: "Error",
+      type: "error",
+      message: "二维码获取失败: " + err,
+    })
+  })
 }
+
+onMounted(()=>{
+  fetchQRCode();
+})
 </script>
 
 <template>
