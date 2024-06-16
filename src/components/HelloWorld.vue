@@ -1,10 +1,11 @@
 <script setup lang="ts">
 
+defineProps<{ msg: string }>()
 
 </script>
 
 <template>
-  <router-view />
+
 </template>
 
 <style scoped>
