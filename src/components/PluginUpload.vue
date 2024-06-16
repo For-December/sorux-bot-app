@@ -5,14 +5,43 @@ import {InfoFilled, Tools} from "@element-plus/icons-vue";
 
 import {ElMessage, ElNotification, UploadFile, UploadInstance, UploadRequestOptions} from 'element-plus'
 
+import {invoke} from '@tauri-apps/api'
+import {UploadRawFile} from "element-plus/es/components/upload/src/upload";
 
 // 定义可以发射的事件
 const emit = defineEmits(['onAddPlugin']);
 
+function readFile(
+    file: UploadRawFile,
+    callback: (arrayBuffer: ArrayBuffer) => void
+) {
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    const arrayBuffer = event.target!.result as ArrayBuffer;
+    // arrayBuffer 包含了文件的字节流数据
+    callback(arrayBuffer)
+  };
+  reader.onerror = function (error) {
+    console.error('读取文件时发生错误:', error);
+  };
+  reader.readAsArrayBuffer(file);
+}
 
 const myUpload = (options: UploadRequestOptions) => {
   console.log("上传文件")
-  console.log(options.file)
+
+  console.log(options.file.name)
+  readFile(options.file, (arrayBuffer) => {
+    // console.log(arrayBuffer)
+    const data = new Uint8Array(arrayBuffer);
+
+    console.log()
+    invoke('upload_file', {
+      file: Array.from(data),
+      filename: options.file.name
+    })
+  })
+
   return
 }
 
@@ -183,7 +212,6 @@ const clearAll = () => {
         </div>
       </el-upload>
     </div>
-
 
 
     <span slot="footer" class="float-right">
