@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import {onMounted} from 'vue'
 import {useUserStore} from "@/store/userStore.ts";
 import {useRouter} from "vue-router";
-import {invoke} from "@tauri-apps/api";
-import {ElNotification} from "element-plus";
+import {qrcodeImageSrc, startQrcodeListener} from "@/utils/globals.ts";
 
 const userStore = useUserStore();
 
@@ -17,23 +16,12 @@ const onLogin = () => {
 
 
 
-const imageSrc = ref('');
+// const imageSrc = ref('');
 
-const fetchQRCode = async () => {
-  invoke("get_qrcode", {}).then((base64) => {
-    imageSrc.value = 'data:image/png;base64,'+base64
-    // console.log(base64)
-  }).catch((err) => {
-    ElNotification({
-      title: "Error",
-      type: "error",
-      message: "二维码获取失败: " + err,
-    })
-  })
-}
+
 
 onMounted(()=>{
-  fetchQRCode();
+  startQrcodeListener()
 })
 </script>
 
@@ -46,8 +34,8 @@ onMounted(()=>{
       </template>
 
       <div class="p-xy">
-        <div v-if="imageSrc" class="flex-center">
-          <el-image :src="imageSrc" class="w-[20vw]">
+        <div v-if="qrcodeImageSrc" class="flex-center">
+          <el-image :src="qrcodeImageSrc" class="w-[20vw]">
             <template #placeholder>
               1111
             </template>

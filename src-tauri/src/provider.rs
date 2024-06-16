@@ -23,8 +23,8 @@ pub fn run_provider() {
             }
         }
 
+        // child.
         // 等待子进程结束
         let _ = child.wait().expect("Failed to wait on child");
     });
-    // 创建一个命令来运行 C# 程序
 }

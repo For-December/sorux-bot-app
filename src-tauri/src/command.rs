@@ -103,7 +103,22 @@ pub fn del_plugins(filename: String) -> String {
 }
 
 #[tauri::command]
-pub fn get_qrcode() -> Result<String, String> {
+pub fn watch_qrcode(window: Window) {
+    std::thread::spawn(move || loop {
+        // 每三秒获取一次二维码推送给前端
+        std::thread::sleep(std::time::Duration::from_secs(3));
+        window
+            .emit(
+                "qrcode-event",
+                Payload {
+                    message: get_qrcode().unwrap_or_default(),
+                },
+            )
+            .unwrap();
+    });
+}
+// #[tauri::command]
+fn get_qrcode() -> Result<String, String> {
     let mut file = File::open(format!("{}/qr.png", PROVIDER_DIR_PATH))
         .map_err(|e| e.to_string())
         .unwrap();
@@ -111,6 +126,7 @@ pub fn get_qrcode() -> Result<String, String> {
     // 读取文件内容到一个 vector
     let mut buffer = Vec::new();
     if let Err(e) = file.read_to_end(&mut buffer) {
+        println!("{}", e.to_string());
         Err(e.to_string())
     } else {
         // 将数据编码为 Base64 并返回
@@ -128,7 +144,7 @@ struct Payload {
 #[tauri::command]
 pub fn init_process(window: Window) {
     std::thread::spawn(move || loop {
-        std::thread::sleep(std::time::Duration::from_secs(1));
+        std::thread::sleep(std::time::Duration::from_secs(10));
         window
             .emit(
                 "my-event",

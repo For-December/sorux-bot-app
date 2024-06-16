@@ -3,6 +3,8 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
+use std::process::exit;
+
 mod command;
 mod global_constants;
 mod provider;
@@ -15,9 +17,20 @@ fn main() {
             command::upload_plugin,
             command::get_plugins,
             command::del_plugins,
-            command::get_qrcode,
+            command::watch_qrcode,
             command::init_process,
         ])
+        .on_window_event(|event| {
+            match event.event() {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    api.prevent_close();
+                    println!("窗口关闭！");
+                    let _ = event.window().close();
+                    exit(0);
+                }
+                _ => {} // TODO
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
