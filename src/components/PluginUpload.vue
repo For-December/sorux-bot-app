@@ -159,10 +159,9 @@ const clearAll = () => {
   <el-dialog
       v-model="dialogVisible"
       title="上传插件"
-      width="50%"
       align-center
   >
-
+<!--    width="60%"-->
     <div class="flex-center">
       <el-upload
           ref="uploadDll"

@@ -3,6 +3,7 @@
 import {computed, onMounted, ref} from "vue";
 import PluginUpload from "@/components/PluginUpload.vue";
 import {ElNotification} from "element-plus";
+import {invoke} from "@tauri-apps/api";
 
 const tableData = ref<Items.PluginItem[]>([])
 
@@ -23,10 +24,9 @@ const name = ref('')
 //删除数据 从index位置开始，删除一行即可
 const remove = (index) => {
 
-  // 先后从端获取
-
   // 这里要向后端请求
   tableData.value.splice(index, 1)
+
 }
 
 onMounted(() => {
@@ -35,13 +35,14 @@ onMounted(() => {
 
 
 const fetchData = () => {
-  tableData.value.push(
-      {
-        num: 0,
-        name: 'example.txt',
-        privilege: 1
-      }
-  )
+  // 先后从端获取
+
+  invoke('get_plugins', {}).then((data)=>{
+    console.log("d",data)
+    tableData.value = data as Items.PluginItem[]
+  })
+
+
 
 }
 

@@ -2,6 +2,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+
+use std::fs;
+
+use serde::{Deserialize, Serialize};
+use serde_json::{Number, Value};
+use walkdir::WalkDir;
+
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
@@ -11,7 +18,6 @@ fn greet(name: &str) -> String {
 fn upload_file(file: Vec<u8>, filename: String) -> Result<String, String> {
     use std::fs::File;
     use std::io::Write;
-    
 
     let path = match filename.ends_with(".dll") {
         true => format!("./bot-resources/wrapper/bin/{}", filename),
@@ -24,9 +30,40 @@ fn upload_file(file: Vec<u8>, filename: String) -> Result<String, String> {
     Ok("文件上传成功".to_string())
 }
 
+#[derive(Serialize, Deserialize)]
+struct PluginItem {
+    name: String,
+    privilege: Number,
+}
+
+#[tauri::command]
+fn get_plugins() -> Result<Vec<PluginItem>, String> {
+    let mut res: Vec<PluginItem> = Vec::new(); // 创建一个存放名字的向量
+    let path = "./bot-resources/wrapper/config/"; // 指定要遍历的目录
+
+    // 遍历目录和子目录中的所有文件
+    for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
+        let path = entry.path();
+        // 检查文件是否是 JSON 文件
+        if path.extension().and_then(std::ffi::OsStr::to_str) == Some("json") {
+            // 读取文件内容
+            let data = fs::read_to_string(path).map_err(|e| e.to_string()).unwrap();
+            println!("{}", data);
+            // 解析 JSON 数据
+            let item: PluginItem = serde_json::from_str(&data.to_lowercase())
+                .map_err(|e| e.to_string())
+                .unwrap();
+
+            res.push(item);
+        }
+    }
+
+    Ok(res)
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, upload_file])
+        .invoke_handler(tauri::generate_handler![greet, upload_file, get_plugins])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
