@@ -29,7 +29,7 @@ const remove = (index: number) => {
   invoke('del_plugins',
       {filename: tableData.value[index].filename}
   ).then((res) => {
-    if (res as String !== '') {
+    if (!res || res as String == '') {
       tableData.value.splice(index, 1)
       ElNotification({
         title: "Success",

@@ -89,7 +89,10 @@ fn del_plugins(filename: String) -> String {
         return String::from(e.to_string());
     }
 
-    if let Err(e) = fs::remove_file(format!("./bot-resources/wrapper/bin/{}", filename)) {
+    if let Err(e) = fs::remove_file(format!(
+        "./bot-resources/wrapper/bin/{}",
+        filename.replace(".json", ".dll")
+    )) {
         String::from(e.to_string())
     } else {
         String::new()
