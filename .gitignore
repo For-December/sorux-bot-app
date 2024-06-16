@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.idea/*
+
+# 忽略一个文件夹下面的所有文件，但保留这个文件夹本身
+src-tauri/bot-resources/provider/*
+!src-tauri/bot-resources/provider
+
+# 同上
+src-tauri/bot-resources/wrapper/bin/*
+!src-tauri/bot-resources/wrapper/bin
+
+src-tauri/bot-resources/wrapper/config/*
+!src-tauri/bot-resources/wrapper/config
+
+src-tauri/bot-resources/wrapper/lib/*
+!src-tauri/bot-resources/wrapper/lib
