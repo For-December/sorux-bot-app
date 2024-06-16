@@ -6,7 +6,7 @@
 use std::fs;
 
 use serde::{Deserialize, Serialize};
-use serde_json::{Number, Value};
+use serde_json::{to_string, Number};
 use walkdir::WalkDir;
 
 #[tauri::command]
@@ -34,6 +34,7 @@ fn upload_file(file: Vec<u8>, filename: String) -> Result<String, String> {
 struct PluginItem {
     name: String,
     privilege: Number,
+    filename: Option<String>, // 记录文件原始路径
 }
 
 #[tauri::command]
@@ -50,10 +51,20 @@ fn get_plugins() -> Result<Vec<PluginItem>, String> {
             let data = fs::read_to_string(path).map_err(|e| e.to_string()).unwrap();
             println!("{}", data);
             // 解析 JSON 数据
-            let item: PluginItem = serde_json::from_str(&data.to_lowercase())
+            let mut item: PluginItem = serde_json::from_str(&data.to_lowercase())
                 .map_err(|e| e.to_string())
                 .unwrap();
 
+            println!(
+                "{}",
+                path.file_name().and_then(std::ffi::OsStr::to_str).unwrap()
+            );
+            item.filename = Some(
+                path.file_name()
+                    .and_then(std::ffi::OsStr::to_str)
+                    .unwrap()
+                    .to_string(),
+            );
             res.push(item);
         }
     }
@@ -61,9 +72,27 @@ fn get_plugins() -> Result<Vec<PluginItem>, String> {
     Ok(res)
 }
 
+#[tauri::command]
+fn del_plugins(filename: String) -> String {
+    if let Err(e) = fs::remove_file(format!("./bot-resources/wrapper/config/{}", filename)) {
+        return String::from(e.to_string());
+    }
+
+    if let Err(e) = fs::remove_file(format!("./bot-resources/wrapper/bin/{}", filename)) {
+        String::from(e.to_string())
+    } else {
+        String::new()
+    }
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, upload_file, get_plugins])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            upload_file,
+            get_plugins,
+            del_plugins
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

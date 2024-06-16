@@ -7,8 +7,9 @@ import {invoke} from "@tauri-apps/api";
 
 const tableData = ref<Items.PluginItem[]>([])
 
-let count = 1
+
 const displayData = computed(() => {
+  let count = 1
   return tableData.value.map(t => {
     t.num = count++
     return t
@@ -22,10 +23,30 @@ const name = ref('')
 
 
 //删除数据 从index位置开始，删除一行即可
-const remove = (index) => {
+const remove = (index: number) => {
 
   // 这里要向后端请求
-  tableData.value.splice(index, 1)
+  invoke('del_plugins',
+      {filename: tableData.value[index].filename}
+  ).then((res) => {
+    if (res as String !== '') {
+      tableData.value.splice(index, 1)
+      ElNotification({
+        title: "Success",
+        type: "success",
+        message: "插件删除成功！"
+      })
+      return
+    }
+
+    ElNotification({
+      title: "Error",
+      type: "error",
+      message: "插件删除失败: " + res
+    })
+
+  })
+
 
 }
 
@@ -37,17 +58,30 @@ onMounted(() => {
 const fetchData = () => {
   // 先后从端获取
 
-  invoke('get_plugins', {}).then((data)=>{
-    console.log("d",data)
-    tableData.value = data as Items.PluginItem[]
+  invoke('get_plugins', {}).then((data) => {
+    console.log("d", data)
+    tableData.value.length = 0;
+    const plugins = data as Items.PluginItem[]
+    plugins.forEach(p => {
+      tableData.value.push(p)
+    })
   })
-
 
 
 }
 
 const onAddPlugin = () => {
-  fetchData()
+  setTimeout(()=>{
+    fetchData()
+
+    ElNotification({
+      title: "Success",
+      type: "success",
+      message: "插件添加成功！"
+    })
+  },1000)
+
+
 }
 
 </script>

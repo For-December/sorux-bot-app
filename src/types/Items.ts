@@ -3,6 +3,7 @@ declare module Items {
         num: number;
         name: string;
         privilege: number;
+        filename:string
     };
 
 }
