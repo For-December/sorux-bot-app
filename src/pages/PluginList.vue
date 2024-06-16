@@ -17,9 +17,9 @@ const displayData = computed(() => {
 })
 
 
-//全局保存编辑的行号
-const globalIndex = ref(-1)
-const name = ref('')
+// //全局保存编辑的行号
+// const globalIndex = ref(-1)
+// const name = ref('')
 
 
 //删除数据 从index位置开始，删除一行即可

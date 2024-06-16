@@ -10,7 +10,10 @@
 
     </el-aside>
     <el-container>
-      <el-header>Header</el-header>
+      <el-header>
+
+        <el-button type="warning" @click="onLogout">登出</el-button>
+      </el-header>
       <el-main>
         <router-view/>
       </el-main>
@@ -24,6 +27,16 @@
 
 
 import SidebarMenu from "@/layout/components/SidebarMenu.vue";
+import {useUserStore} from "@/store/userStore.ts";
+import {useRouter} from "vue-router";
+
+const userStore = useUserStore()
+const router = useRouter()
+const onLogout = () => {
+  userStore.logout()
+  router.push("/login")
+}
+
 </script>
 
 <style scoped>
