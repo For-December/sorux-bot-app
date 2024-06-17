@@ -3,11 +3,9 @@ import { invoke } from "@tauri-apps/api";
 import { listen } from "@tauri-apps/api/event";
 import { useUserStore } from "@/store/userStore.ts";
 import { ElNotification } from "element-plus";
+import Payload = Items.Payload;
 
-//事件的消息体
-interface Payload {
-  message: string;
-}
+
 
 const userStore = useUserStore();
 

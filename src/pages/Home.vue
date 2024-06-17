@@ -1,99 +1,45 @@
 <script setup lang="ts">
 import Terminal from "@/pages/Terminal.vue";
 import {ref} from "vue";
+import {invoke} from "@tauri-apps/api";
+import {listen} from "@tauri-apps/api/event";
 
-interface Tree {
-  label: string
-  children?: Tree[]
-}
-
-const handleNodeClick = (data: Tree) => {
-  console.log(data)
-}
-
-const data: Tree[] = [
-  {
-    label: 'Level one 1',
-    children: [
-      {
-        label: 'Level two 1-1',
-        children: [
-          {
-            label: 'Level three 1-1-1',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'Level one 2',
-    children: [
-      {
-        label: 'Level two 2-1',
-        children: [
-          {
-            label: 'Level three 2-1-1',
-          },
-        ],
-      },
-      {
-        label: 'Level two 2-2',
-        children: [
-          {
-            label: 'Level three 2-2-1',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'Level one 3',
-    children: [
-      {
-        label: 'Level two 3-1',
-        children: [
-          {
-            label: 'Level three 3-1-1',
-          },
-        ],
-      },
-      {
-        label: 'Level two 3-2',
-        children: [
-          {
-            label: 'Level three 3-2-1',
-          },
-        ],
-      },
-    ],
-  },
-]
-
-const defaultProps = {
-  children: 'children',
-  label: 'label',
-}
+import Payload = Items.Payload;
 
 
 
 
 
 
-const terminal = ref(null);
-const logLines = ref([
-  "Line 1: Initialization complete.",
-  "Line 2: Starting process...",
-  "Line 3: Process running...",
-  "Line 4: Process finished.",
-]);
-let currentLineIndex = 0;
+const terminal = ref();
 
-const addLogLine = () => {
-  if (currentLineIndex < 100) {
-    terminal.value.addLine(logLines.value[0]);
-    currentLineIndex++;
+let unListen: any = null;
+const startListen = () => {
+  invoke("provider_logs", {});
+  //防止重复监听
+  if (unListen != null) {
+    console.log("already listen");
+    return;
   }
+
+
+  const start_listen = async () => {
+    //注意这里的my-event名称，要与后端保持一致
+    return await listen<Payload>("provider-logs-event", (event) => {
+      const { message } = event.payload;
+      console.log("message:", message);
+      terminal.value.addLine(message);
+    });
+  };
+
+  unListen = start_listen()
 };
+
+startListen()
+
+
+
+
 </script>
 
 <template>

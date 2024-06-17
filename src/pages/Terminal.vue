@@ -28,7 +28,7 @@ export default defineComponent({
         terminal.value = term;
 
         // Example: Write initial content to the terminal
-        term.write('Welcome to the Vue.js terminal!\r\n');
+        term.write('Welcome to sorux-bot!\r\n');
       }
     });
 

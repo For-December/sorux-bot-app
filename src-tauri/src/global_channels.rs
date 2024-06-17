@@ -19,3 +19,10 @@ lazy_static! {
 lazy_static! {
     pub static ref CHILD_PROCESS_MAP: Mutex<HashMap<String, Child>> = Mutex::new(HashMap::new());
 }
+
+lazy_static! {
+    pub static ref PROVIDER_LOGS_CHANNEL: (Arc<Mutex<Sender<String>>>, Arc<Mutex<Receiver<String>>>) = {
+        let (tx, rx) = mpsc::channel::<String>();
+        (Arc::new(Mutex::new(tx)), Arc::new(Mutex::new(rx)))
+    };
+}

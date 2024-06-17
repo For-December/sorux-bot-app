@@ -6,4 +6,9 @@ declare module Items {
         filename:string
     };
 
+    //事件的消息体
+    interface Payload {
+        message: string;
+    }
+
 }

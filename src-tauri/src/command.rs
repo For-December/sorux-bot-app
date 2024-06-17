@@ -12,7 +12,7 @@ use tauri::Window;
 use walkdir::WalkDir;
 
 use crate::{
-    global_channels::{CHILD_PROCESS_MAP, PROVIDER_BOT_LOGIN_CHANNEL},
+    global_channels::{CHILD_PROCESS_MAP, PROVIDER_BOT_LOGIN_CHANNEL, PROVIDER_LOGS_CHANNEL},
     global_constants::{
         PLUGIN_BIN_DIR, PLUGIN_CONF_DIR, PROVIDER_CHILD_NAME, PROVIDER_DIR_PATH, WRAPPER_CHILD_NAME,
     },
@@ -253,4 +253,21 @@ where
 #[tauri::command]
 pub fn logout() {
     restart_child_process(vec![PROVIDER_CHILD_NAME, WRAPPER_CHILD_NAME], || {});
+}
+
+// provider的日志
+#[tauri::command]
+pub fn provider_logs(window: Window) {
+    std::thread::spawn(move || {
+        let receiver = Arc::clone(&PROVIDER_LOGS_CHANNEL.1);
+        let receiver = receiver.lock().unwrap();
+        println!("等待接收");
+        // 日志不断推送给前端
+        for line in receiver.iter() {
+            println!("to front: {}", line);
+            window
+                .emit("provider-logs-event", Payload { message: line })
+                .unwrap();
+        }
+    });
 }

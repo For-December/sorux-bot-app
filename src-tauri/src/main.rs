@@ -64,6 +64,7 @@ fn main() {
             command::watch_qrcode,
             command::init_process,
             command::logout,
+            command::provider_logs,
         ])
         .on_window_event(move |event| {
             match event.event() {
