@@ -38,6 +38,8 @@ pub fn run_provider() -> Child {
                     Err(e) => println!("Error reading line: {}", e),
                 }
             }
+
+            println!("结束 provider 线程~");
         });
     }
 

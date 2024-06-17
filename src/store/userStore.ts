@@ -16,6 +16,9 @@ export const useUserStore = defineStore('userStore', {
         },
         logout() {
             this.isLoggedIn = false;
-        }
+            router.push("/login").then(r => {
+                console.log("登出成功，导航完毕", r);
+            })
+        },
     }
 });

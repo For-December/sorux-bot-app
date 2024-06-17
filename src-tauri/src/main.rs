@@ -3,7 +3,9 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-use std::{sync::mpsc, thread};
+use std::{process::Child, sync::mpsc, thread};
+
+use global_channels::CHILD_PROCESS_MAP;
 
 mod command;
 mod global_channels;
@@ -15,12 +17,28 @@ fn main() {
     // 用来关闭子进程的通道
     let (tx, rx) = mpsc::channel::<bool>();
 
-    let mut provider_child = provider::run_provider();
-    let mut wrapper_child = wrapper::run_wrapper();
-    thread::spawn(move || {
+    let provider_child = provider::run_provider();
+    let wrapper_child = wrapper::run_wrapper();
+
+    {
+        let mut map = CHILD_PROCESS_MAP.lock().unwrap();
+        map.insert("provider".to_string(), provider_child);
+        map.insert("wrapper".to_string(), wrapper_child);
+    }
+
+    thread::spawn(|| {
         // 在主线程中作为消费者接收并处理布尔值
         for _ in rx {
             println!("接收到退出信号！");
+
+            let mut provider_child: Child;
+            let mut wrapper_child: Child;
+            {
+                let mut map = CHILD_PROCESS_MAP.lock().unwrap();
+                provider_child = map.remove("provider").unwrap();
+                wrapper_child = map.remove("wrapper").unwrap();
+            }
+
             // 结束子进程
             let _ = provider_child.kill().expect("Failed to kill child process");
             let _ = wrapper_child.kill().expect("Failed to kill child process");

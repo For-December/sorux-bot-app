@@ -1,6 +1,10 @@
-use std::sync::{
-    mpsc::{self, Receiver, Sender},
-    Arc, Mutex,
+use std::{
+    collections::HashMap,
+    process::Child,
+    sync::{
+        mpsc::{self, Receiver, Sender},
+        Arc, Mutex,
+    },
 };
 
 use lazy_static::lazy_static;
@@ -10,4 +14,8 @@ lazy_static! {
         let (tx, rx) = mpsc::channel::<bool>();
         (Arc::new(Mutex::new(tx)), Arc::new(Mutex::new(rx)))
     };
+}
+
+lazy_static! {
+    pub static ref CHILD_PROCESS_MAP: Mutex<HashMap<String, Child>> = Mutex::new(HashMap::new());
 }

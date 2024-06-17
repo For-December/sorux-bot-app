@@ -109,8 +109,8 @@ pub fn del_plugins(filename: String) -> String {
 #[tauri::command]
 pub fn watch_qrcode(window: Window) {
     std::thread::spawn(move || loop {
-        // 每三秒获取一次二维码推送给前端
-        std::thread::sleep(std::time::Duration::from_secs(3));
+        // 每三秒获取一次二维码推送给前端 (1+2)
+        std::thread::sleep(std::time::Duration::from_secs(1));
         window
             .emit(
                 "qrcode-event",
@@ -119,6 +119,7 @@ pub fn watch_qrcode(window: Window) {
                 },
             )
             .unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(2));
     });
 }
 // #[tauri::command]
@@ -164,3 +165,7 @@ pub fn init_process(window: Window) {
         }
     });
 }
+
+// 登出
+#[tauri::command]
+pub fn logout() {}
