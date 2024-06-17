@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import Terminal from "@/pages/Terminal.vue";
+import {ref} from "vue";
+
 interface Tree {
   label: string
   children?: Tree[]
@@ -70,15 +73,39 @@ const defaultProps = {
   children: 'children',
   label: 'label',
 }
+
+
+
+
+
+
+const terminal = ref(null);
+const logLines = ref([
+  "Line 1: Initialization complete.",
+  "Line 2: Starting process...",
+  "Line 3: Process running...",
+  "Line 4: Process finished.",
+]);
+let currentLineIndex = 0;
+
+const addLogLine = () => {
+  if (currentLineIndex < 100) {
+    terminal.value.addLine(logLines.value[0]);
+    currentLineIndex++;
+  }
+};
 </script>
 
 <template>
-  <el-tree
-      style="max-width: 600px"
-      :data="data"
-      :props="defaultProps"
-      @node-click="handleNodeClick"
-  />
+<!--    <button @click="addLogLine">Add Log Line</button>-->
+  <Terminal ref="terminal" />
+
+<!--  <el-tree-->
+<!--      style="max-width: 600px"-->
+<!--      :data="data"-->
+<!--      :props="defaultProps"-->
+<!--      @node-click="handleNodeClick"-->
+<!--  />-->
 </template>
 
 <style scoped>

@@ -203,7 +203,7 @@ pub fn init_process(window: Window) {
     });
 }
 
-fn restart_child_process<F>(child_process_names: Vec<&str>, mut call_back: F)
+fn restart_child_process<F>(child_process_names: Vec<&str>, call_back: F)
 where
     F: FnOnce(),
 {
