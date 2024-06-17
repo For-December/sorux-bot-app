@@ -1,6 +1,7 @@
 use std::{
     fs::{self, File},
     io::Read,
+    process::Child,
     sync::Arc,
 };
 
@@ -11,8 +12,9 @@ use tauri::Window;
 use walkdir::WalkDir;
 
 use crate::{
-    global_channels::PROVIDER_BOT_LOGIN_CHANNEL,
+    global_channels::{CHILD_PROCESS_MAP, PROVIDER_BOT_LOGIN_CHANNEL},
     global_constants::{PROVIDER_DIR_PATH, WRAPPER_DIR_PATH},
+    provider, wrapper,
 };
 
 #[tauri::command]
@@ -168,4 +170,33 @@ pub fn init_process(window: Window) {
 
 // 登出
 #[tauri::command]
-pub fn logout() {}
+pub fn logout() {
+    let mut provider_child: Child;
+    let mut wrapper_child: Child;
+    {
+        // 每次拿到锁一定是操作两个值
+        let mut map = CHILD_PROCESS_MAP.lock().unwrap();
+        provider_child = map.remove("provider").unwrap();
+        wrapper_child = map.remove("wrapper").unwrap();
+
+        // 结束子进程
+        let _ = provider_child.kill().expect("Failed to kill child process");
+        let _ = wrapper_child.kill().expect("Failed to kill child process");
+
+        println!("exit child process and ready to restart...");
+
+        // 等待子进程结束
+        let _ = provider_child.wait().expect("Failed to wait on child");
+        let _ = wrapper_child.kill().expect("Failed to kill child process");
+
+        // 启动新的子进程
+
+        provider_child = provider::run_provider();
+        wrapper_child = wrapper::run_wrapper();
+
+        map.insert("provider".to_string(), provider_child);
+        map.insert("wrapper".to_string(), wrapper_child);
+
+        println!("restart child process successfully...");
+    }
+}

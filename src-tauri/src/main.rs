@@ -34,6 +34,7 @@ fn main() {
             let mut provider_child: Child;
             let mut wrapper_child: Child;
             {
+                // 每次拿到锁一定是操作两个值
                 let mut map = CHILD_PROCESS_MAP.lock().unwrap();
                 provider_child = map.remove("provider").unwrap();
                 wrapper_child = map.remove("wrapper").unwrap();
@@ -61,6 +62,7 @@ fn main() {
             command::del_plugins,
             command::watch_qrcode,
             command::init_process,
+            command::logout,
         ])
         .on_window_event(move |event| {
             match event.event() {

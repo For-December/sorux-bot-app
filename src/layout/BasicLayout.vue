@@ -28,10 +28,20 @@
 
 import SidebarMenu from "@/layout/components/SidebarMenu.vue";
 import {useUserStore} from "@/store/userStore.ts";
+import {invoke} from "@tauri-apps/api";
+import {ElNotification} from "element-plus";
 
 const userStore = useUserStore()
 const onLogout = () => {
-  userStore.logout()
+  invoke('logout', {}).then(() => {
+    userStore.logout()
+    ElNotification({
+      title: "Success",
+      type: "warning",
+      message: "成功退出登录！",
+    })
+  })
+
 
 }
 
