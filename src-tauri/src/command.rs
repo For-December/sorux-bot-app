@@ -45,16 +45,37 @@ pub fn upload_plugin(
     dll_file: Vec<u8>,
     json_filename: String,
 ) -> Result<String, String> {
-    // 同名上传
-    upload_file(json_file, &json_filename)
-        .and_then(|_| upload_file(dll_file, &json_filename.replace(".json", ".dll")))
-        .and_then(|_| {
-            // and_then: Calls op if the result is Ok, otherwise returns the Err value of self.
+    let mut res = String::new();
+    let mut is_err = false;
+    restart_child_process(vec![WRAPPER_CHILD_NAME], || {
+        if let Err(e) = upload_file(json_file, &json_filename) {
+            is_err = true;
+            res = e;
+            return;
+        }
 
-            // 上传完成后重启wrapper
-            restart_child_process(vec![WRAPPER_CHILD_NAME]);
-            Ok(String::from("插件添加成功！"))
-        })
+        if let Err(e) = upload_file(dll_file, &json_filename.replace(".json", ".dll")) {
+            is_err = true;
+            res = e;
+            return;
+        }
+
+        res = String::from("插件添加成功！");
+    });
+
+    if is_err {
+        Err(res)
+    } else {
+        Ok(res)
+    }
+    // 同名上传
+    // upload_file(json_file, &json_filename)
+    //     .and_then(|_| upload_file(dll_file, &json_filename.replace(".json", ".dll")))
+    //     .and_then(|_| {
+    //         // and_then: Calls op if the result is Ok, otherwise returns the Err value of self.
+
+    //         Ok(String::from("插件添加成功！"))
+    //     })
 }
 
 #[derive(Serialize, Deserialize)]
@@ -101,19 +122,25 @@ pub fn get_plugins() -> Result<Vec<PluginItem>, String> {
 
 #[tauri::command]
 pub fn del_plugins(filename: String) -> String {
-    if let Err(e) = fs::remove_file(format!("{}/{}", PLUGIN_CONF_DIR, filename)) {
-        return String::from(e.to_string());
-    }
+    let mut res = String::new();
+    restart_child_process(vec![WRAPPER_CHILD_NAME], || {
+        if let Err(e) = fs::remove_file(format!("{}/{}", PLUGIN_CONF_DIR, filename)) {
+            res = String::from(e.to_string());
+            return;
+        }
 
-    if let Err(e) = fs::remove_file(format!(
-        "{}/{}",
-        PLUGIN_BIN_DIR,
-        filename.replace(".json", ".dll")
-    )) {
-        String::from(e.to_string())
-    } else {
-        String::new()
-    }
+        res = if let Err(e) = fs::remove_file(format!(
+            "{}/{}",
+            PLUGIN_BIN_DIR,
+            filename.replace(".json", ".dll")
+        )) {
+            String::from(e.to_string())
+        } else {
+            String::new()
+        };
+    });
+
+    res
 }
 
 #[tauri::command]
@@ -176,7 +203,10 @@ pub fn init_process(window: Window) {
     });
 }
 
-fn restart_child_process(child_process_names: Vec<&str>) {
+fn restart_child_process<F>(child_process_names: Vec<&str>, mut call_back: F)
+where
+    F: FnOnce(),
+{
     let mut child_process: Child;
     {
         // 每次拿到锁，释放锁后一定还是2个子进程
@@ -194,6 +224,9 @@ fn restart_child_process(child_process_names: Vec<&str>) {
             child_process_names
         );
 
+        // 执行回调
+        call_back();
+        println!("执行回调中");
         // 启动新的子进程
 
         for ele in child_process_names {
@@ -219,5 +252,5 @@ fn restart_child_process(child_process_names: Vec<&str>) {
 // 登出
 #[tauri::command]
 pub fn logout() {
-    restart_child_process(vec![PROVIDER_CHILD_NAME, WRAPPER_CHILD_NAME]);
+    restart_child_process(vec![PROVIDER_CHILD_NAME, WRAPPER_CHILD_NAME], || {});
 }
