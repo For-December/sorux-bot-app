@@ -9,21 +9,27 @@ mod command;
 mod global_channels;
 mod global_constants;
 mod provider;
+mod wrapper;
 
 fn main() {
     // 用来关闭子进程的通道
     let (tx, rx) = mpsc::channel::<bool>();
 
     let mut provider_child = provider::run_provider();
+    let mut wrapper_child = wrapper::run_wrapper();
     thread::spawn(move || {
         // 在主线程中作为消费者接收并处理布尔值
         for _ in rx {
             println!("接收到退出信号！");
             // 结束子进程
             let _ = provider_child.kill().expect("Failed to kill child process");
+            let _ = wrapper_child.kill().expect("Failed to kill child process");
 
-            // // 等待子进程结束
+            println!("provider and wrapper children process all exit!");
+
+            // 等待子进程结束
             let _ = provider_child.wait().expect("Failed to wait on child");
+            let _ = wrapper_child.kill().expect("Failed to kill child process");
             break;
         }
         println!("监听线程退出！")

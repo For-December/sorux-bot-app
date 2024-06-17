@@ -11,7 +11,7 @@ use tauri::Window;
 use walkdir::WalkDir;
 
 use crate::{
-    global_channels::WRAPPER_BOT_LOGIN_CHANNEL,
+    global_channels::PROVIDER_BOT_LOGIN_CHANNEL,
     global_constants::{PROVIDER_DIR_PATH, WRAPPER_DIR_PATH},
 };
 
@@ -148,7 +148,7 @@ struct Payload {
 #[tauri::command]
 pub fn init_process(window: Window) {
     std::thread::spawn(move || {
-        let receiver = Arc::clone(&WRAPPER_BOT_LOGIN_CHANNEL.1);
+        let receiver = Arc::clone(&PROVIDER_BOT_LOGIN_CHANNEL.1);
         let receiver = receiver.lock().unwrap();
 
         // 这里前端收到消息就说明登陆成功了

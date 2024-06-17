@@ -29,11 +29,14 @@ src-tauri/bot-resources/provider/*
 !src-tauri/bot-resources/provider
 
 # 同上
-src-tauri/bot-resources/wrapper/bin/*
-!src-tauri/bot-resources/wrapper/bin
+src-tauri/bot-resources/wrapper/plugins/bin/*
+!src-tauri/bot-resources/wrapper/plugins/bin
 
-src-tauri/bot-resources/wrapper/config/*
-!src-tauri/bot-resources/wrapper/config
+src-tauri/bot-resources/wrapper/plugins/config/*
+!src-tauri/bot-resources/wrapper/plugins/config
 
-src-tauri/bot-resources/wrapper/lib/*
-!src-tauri/bot-resources/wrapper/lib
+src-tauri/bot-resources/wrapper/plugins/lib/*
+!src-tauri/bot-resources/wrapper/plugins/lib
+
+src-tauri/bot-resources/wrapper/publish/*
+!src-tauri/bot-resources/wrapper/publish
