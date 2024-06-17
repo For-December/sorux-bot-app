@@ -6,6 +6,7 @@
 use std::{process::Child, sync::mpsc, thread};
 
 use global_channels::CHILD_PROCESS_MAP;
+use global_constants::{PROVIDER_CHILD_NAME, WRAPPER_CHILD_NAME};
 
 mod command;
 mod global_channels;
@@ -22,8 +23,8 @@ fn main() {
 
     {
         let mut map = CHILD_PROCESS_MAP.lock().unwrap();
-        map.insert("provider".to_string(), provider_child);
-        map.insert("wrapper".to_string(), wrapper_child);
+        map.insert(PROVIDER_CHILD_NAME.to_string(), provider_child);
+        map.insert(WRAPPER_CHILD_NAME.to_string(), wrapper_child);
     }
 
     thread::spawn(|| {
@@ -36,8 +37,8 @@ fn main() {
             {
                 // 每次拿到锁一定是操作两个值
                 let mut map = CHILD_PROCESS_MAP.lock().unwrap();
-                provider_child = map.remove("provider").unwrap();
-                wrapper_child = map.remove("wrapper").unwrap();
+                provider_child = map.remove(PROVIDER_CHILD_NAME).unwrap();
+                wrapper_child = map.remove(WRAPPER_CHILD_NAME).unwrap();
             }
 
             // 结束子进程
