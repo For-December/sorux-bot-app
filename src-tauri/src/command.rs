@@ -14,7 +14,7 @@ use walkdir::WalkDir;
 use crate::{
     global_channels::{CHILD_PROCESS_MAP, PROVIDER_BOT_LOGIN_CHANNEL},
     global_constants::{
-        PROVIDER_CHILD_NAME, PROVIDER_DIR_PATH, WRAPPER_CHILD_NAME, WRAPPER_DIR_PATH,
+        PLUGIN_BIN_DIR, PLUGIN_CONF_DIR, PROVIDER_CHILD_NAME, PROVIDER_DIR_PATH, WRAPPER_CHILD_NAME,
     },
     provider, wrapper,
 };
@@ -29,8 +29,8 @@ fn upload_file(file: Vec<u8>, filename: &str) -> Result<String, String> {
     use std::io::Write;
 
     let path = match filename.ends_with(".dll") {
-        true => format!("{}/bin/{}", WRAPPER_DIR_PATH, filename),
-        false => format!("{}/config/{}", WRAPPER_DIR_PATH, filename),
+        true => format!("{}/{}", PLUGIN_BIN_DIR, filename),
+        false => format!("{}/{}", PLUGIN_CONF_DIR, filename),
     };
 
     let mut output = File::create(path).map_err(|e| e.to_string())?;
@@ -46,9 +46,15 @@ pub fn upload_plugin(
     json_filename: String,
 ) -> Result<String, String> {
     // 同名上传
-    upload_file(json_file, &json_filename).and_then(|_| {
-        return upload_file(dll_file, &json_filename.replace(".json", ".dll"));
-    })
+    upload_file(json_file, &json_filename)
+        .and_then(|_| upload_file(dll_file, &json_filename.replace(".json", ".dll")))
+        .and_then(|_| {
+            // and_then: Calls op if the result is Ok, otherwise returns the Err value of self.
+
+            // 上传完成后重启wrapper
+            restart_child_process(vec![WRAPPER_CHILD_NAME]);
+            Ok(String::from("插件添加成功！"))
+        })
 }
 
 #[derive(Serialize, Deserialize)]
@@ -61,7 +67,7 @@ pub struct PluginItem {
 #[tauri::command]
 pub fn get_plugins() -> Result<Vec<PluginItem>, String> {
     let mut res: Vec<PluginItem> = Vec::new(); // 创建一个存放名字的向量
-    let path = format!("{}/config/", WRAPPER_DIR_PATH); // 指定要遍历的目录
+    let path = format!("{}/", PLUGIN_CONF_DIR); // 指定要遍历的目录
 
     // 遍历目录和子目录中的所有文件
     for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
@@ -95,13 +101,13 @@ pub fn get_plugins() -> Result<Vec<PluginItem>, String> {
 
 #[tauri::command]
 pub fn del_plugins(filename: String) -> String {
-    if let Err(e) = fs::remove_file(format!("{}/config/{}", WRAPPER_DIR_PATH, filename)) {
+    if let Err(e) = fs::remove_file(format!("{}/{}", PLUGIN_CONF_DIR, filename)) {
         return String::from(e.to_string());
     }
 
     if let Err(e) = fs::remove_file(format!(
-        "{}/bin/{}",
-        WRAPPER_DIR_PATH,
+        "{}/{}",
+        PLUGIN_BIN_DIR,
         filename.replace(".json", ".dll")
     )) {
         String::from(e.to_string())
