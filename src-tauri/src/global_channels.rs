@@ -21,7 +21,7 @@ lazy_static! {
 }
 
 lazy_static! {
-    pub static ref PROVIDER_LOGS_CHANNEL: (Arc<Mutex<Sender<String>>>, Arc<Mutex<Receiver<String>>>) = {
+    pub static ref WRAPPER_LOGS_CHANNEL: (Arc<Mutex<Sender<String>>>, Arc<Mutex<Receiver<String>>>) = {
         let (tx, rx) = mpsc::channel::<String>();
         (Arc::new(Mutex::new(tx)), Arc::new(Mutex::new(rx)))
     };

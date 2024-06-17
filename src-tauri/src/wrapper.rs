@@ -1,10 +1,11 @@
 use std::{
     io::{BufRead, BufReader},
     process::{Child, Command, Stdio},
+    sync::Arc,
     thread,
 };
 
-use crate::global_constants::WRAPPER_DIR_PATH;
+use crate::{global_channels::WRAPPER_LOGS_CHANNEL, global_constants::WRAPPER_DIR_PATH};
 
 pub fn run_wrapper() -> Child {
     // 创建子进程启动 provider
@@ -23,6 +24,12 @@ pub fn run_wrapper() -> Child {
                 match line {
                     Ok(line) => {
                         println!("Wrapper: {}", line);
+                        {
+                            let sender = Arc::clone(&WRAPPER_LOGS_CHANNEL.0);
+                            let sender = sender.lock().unwrap();
+                            sender.send(line.clone()).unwrap();
+                            println!("sent..");
+                        }
                     }
                     Err(e) => println!("Error reading line: {}", e),
                 }

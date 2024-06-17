@@ -3,7 +3,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::Arc;
 use std::thread;
 
-use crate::global_channels::{PROVIDER_BOT_LOGIN_CHANNEL, PROVIDER_LOGS_CHANNEL};
+use crate::global_channels::PROVIDER_BOT_LOGIN_CHANNEL;
 use crate::global_constants::PROVIDER_DIR_PATH;
 
 pub fn run_provider() -> Child {
@@ -26,13 +26,6 @@ pub fn run_provider() -> Child {
                 match line {
                     Ok(line) => {
                         println!("Provider: {}", line);
-                        {
-                            let sender = Arc::clone(&PROVIDER_LOGS_CHANNEL.0);
-                            let sender = sender.lock().unwrap();
-                            sender.send(line.clone()).unwrap();
-                            println!("sent..");
-                        }
-
                         if line.contains("Account has logged in") {
                             println!("登陆上了，发信号");
                             {
