@@ -1,28 +1,22 @@
 <script setup lang="ts">
-import {onMounted} from 'vue'
-import {useUserStore} from "@/store/userStore.ts";
-import {useRouter} from "vue-router";
-import {qrcodeImageSrc, startQrcodeListener} from "@/utils/globals.ts";
+import { onMounted } from "vue";
+import { useUserStore } from "@/store/userStore.ts";
+import { qrcodeImageSrc, startQrcodeListener } from "@/utils/globals.ts";
 
 const userStore = useUserStore();
 
 // const router = useRouter()
 
 const onLogin = () => {
-  userStore.login()
+  userStore.login();
   // router.push("/")
-}
-
-
-
+};
 
 // const imageSrc = ref('');
 
-
-
-onMounted(()=>{
-  startQrcodeListener()
-})
+onMounted(() => {
+  startQrcodeListener();
+});
 </script>
 
 <template>
@@ -36,30 +30,20 @@ onMounted(()=>{
       <div class="p-xy">
         <div v-if="qrcodeImageSrc" class="flex-center">
           <el-image :src="qrcodeImageSrc" class="w-[20vw]">
-            <template #placeholder>
-              1111
-            </template>
+            <template #placeholder> 1111 </template>
           </el-image>
         </div>
         <div v-else class="flex-center">
-
           <div class="image-slot">
             正在获取登录二维码，请稍后
             <span class="dot">...</span>
           </div>
-
         </div>
       </div>
-
-
     </el-card>
   </div>
 
-
-  <el-button type="success" @click="onLogin">
-    LOGIN
-  </el-button>
-
+  <el-button type="success" @click="onLogin"> LOGIN </el-button>
 </template>
 
 <style lang="scss" scoped>

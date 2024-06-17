@@ -1,9 +1,7 @@
 import {createRouter, createWebHashHistory, RouteRecordRaw} from "vue-router";
 import {useUserStore} from "@/store/userStore.ts";
 import {
-    Document,
     Menu as IconMenu,
-    Location,
     Setting,
 } from '@element-plus/icons-vue'
 
