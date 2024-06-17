@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import {invoke} from "@tauri-apps/api";
 import {listen} from "@tauri-apps/api/event";
+import {useUserStore} from "@/store/userStore.ts";
+import {ElNotification} from "element-plus";
 
 //事件的消息体
 interface Payload {
   message: string;
 
 }
+
+const userStore = useUserStore()
+
 
 let unListen: any = null
 const startListen = () => {
@@ -22,6 +27,13 @@ const startListen = () => {
     return await listen<Payload>('my-event', (event) => {
       const {message} = event.payload;
       console.log("message:", message);
+      ElNotification({
+        title: "Success",
+        type: "success",
+        message: "扫码完毕，登陆成功！",
+
+      })
+      userStore.login()
     });
   };
   unListen = start_listen();

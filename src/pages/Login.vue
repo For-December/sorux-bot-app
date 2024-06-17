@@ -6,11 +6,11 @@ import {qrcodeImageSrc, startQrcodeListener} from "@/utils/globals.ts";
 
 const userStore = useUserStore();
 
-const router = useRouter()
+// const router = useRouter()
 
 const onLogin = () => {
   userStore.login()
-  router.push("/")
+  // router.push("/")
 }
 
 

@@ -1,7 +1,9 @@
 use std::io::{BufRead, BufReader};
 use std::process::{Child, Command, Stdio};
+use std::sync::Arc;
 use std::thread;
 
+use crate::global_channels::WRAPPER_BOT_LOGIN_CHANNEL;
 use crate::global_constants::PROVIDER_DIR_PATH;
 
 pub fn run_provider() -> Child {
@@ -22,7 +24,17 @@ pub fn run_provider() -> Child {
             // 读取管道中的数据
             for line in reader.lines() {
                 match line {
-                    Ok(line) => println!("Received: {}", line),
+                    Ok(line) => {
+                        println!("Provider: {}", line);
+                        if line.contains("Account has logged in") {
+                            println!("登陆上了，发信号");
+                            {
+                                let sender = Arc::clone(&WRAPPER_BOT_LOGIN_CHANNEL.0);
+                                let sender = sender.lock().unwrap();
+                                sender.send(true).unwrap();
+                            }
+                        }
+                    }
                     Err(e) => println!("Error reading line: {}", e),
                 }
             }

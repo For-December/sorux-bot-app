@@ -6,6 +6,7 @@
 use std::{sync::mpsc, thread};
 
 mod command;
+mod global_channels;
 mod global_constants;
 mod provider;
 

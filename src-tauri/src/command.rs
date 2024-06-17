@@ -1,6 +1,7 @@
 use std::{
     fs::{self, File},
     io::Read,
+    sync::Arc,
 };
 
 use base64::{engine::general_purpose::STANDARD, Engine as _};
@@ -9,7 +10,10 @@ use serde_json::Number;
 use tauri::Window;
 use walkdir::WalkDir;
 
-use crate::global_constants::{PROVIDER_DIR_PATH, WRAPPER_DIR_PATH};
+use crate::{
+    global_channels::WRAPPER_BOT_LOGIN_CHANNEL,
+    global_constants::{PROVIDER_DIR_PATH, WRAPPER_DIR_PATH},
+};
 
 #[tauri::command]
 pub fn greet(name: &str) -> String {
@@ -143,15 +147,20 @@ struct Payload {
 // 在 command 中初始化后台进程，并仅向使用该命令的窗口发出周期性事件
 #[tauri::command]
 pub fn init_process(window: Window) {
-    std::thread::spawn(move || loop {
-        std::thread::sleep(std::time::Duration::from_secs(10));
-        window
-            .emit(
-                "my-event",
-                Payload {
-                    message: "Tauri is awesome!".into(),
-                },
-            )
-            .unwrap();
+    std::thread::spawn(move || {
+        let receiver = Arc::clone(&WRAPPER_BOT_LOGIN_CHANNEL.1);
+        let receiver = receiver.lock().unwrap();
+
+        // 这里前端收到消息就说明登陆成功了
+        for _ in receiver.iter() {
+            window
+                .emit(
+                    "my-event",
+                    Payload {
+                        message: "Tauri is awesome!".into(),
+                    },
+                )
+                .unwrap();
+        }
     });
 }
